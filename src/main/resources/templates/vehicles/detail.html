@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${vehicle.regNumber + ' - Vehicle Details'}">Vehicle Details</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --accent-color: #0f3460;
+            --primary-color: #667eea;
+            --text-light: rgba(255, 255, 255, 0.87);
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--accent-color) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-light);
+        }
+
+        .navbar {
+            background: rgba(22, 33, 62, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+        }
+
+        .nav-link:hover {
+            color: white !important;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            margin-bottom: 1.5rem;
+        }
+
+        .vehicle-header {
+            background: linear-gradient(135deg, var(--primary-color), #764ba2);
+            border-radius: 20px;
+            padding: 2rem;
+            margin-bottom: 1.5rem;
+        }
+
+        .vehicle-reg {
+            font-size: 2rem;
+            font-weight: 700;
+        }
+
+        .stat-box {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 1.5rem;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 0.75rem 0;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+        }
+
+        .info-row:last-child {
+            border-bottom: none;
+        }
+
+        .info-label {
+            color: var(--text-muted);
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .table {
+            color: var(--text-light);
+        }
+
+        .table th {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .table td {
+            border-color: rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .badge-service {
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-car me-2"></i>VehicleTracker
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/dashboard}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/vehicles}">Vehicles</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Back Link -->
+        <a th:href="@{/vehicles}" class="text-muted text-decoration-none mb-3 d-inline-block">
+            <i class="fas fa-arrow-left me-2"></i>Back to Vehicles
+        </a>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i><span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Vehicle Header -->
+        <div class="vehicle-header text-white">
+            <div class="row align-items-center">
+                <div class="col-md-8">
+                    <div class="d-flex align-items-center mb-2">
+                        <i class="fas fa-car fa-2x me-3"></i>
+                        <div>
+                            <div class="vehicle-reg" th:text="${vehicle.regNumber}">KL01AB1234</div>
+                            <div
+                                th:text="${vehicle.make + ' ' + vehicle.model + (vehicle.variant != null ? ' ' + vehicle.variant : '')}">
+                                Hero Splendor Plus</div>
+                        </div>
+                    </div>
+                </div>
+                <div class="col-md-4 text-md-end mt-3 mt-md-0">
+                    <a th:href="@{/vehicles/{id}/edit(id=${vehicle.id})}" class="btn btn-light me-2">
+                        <i class="fas fa-edit me-1"></i>Edit
+                    </a>
+                    <a th:href="@{/services/add(vehicleId=${vehicle.id})}" class="btn btn-primary-gradient">
+                        <i class="fas fa-plus me-1"></i>Log Service
+                    </a>
+                </div>
+            </div>
+        </div>
+
+        <div class="row">
+            <!-- Left Column - Stats & Info -->
+            <div class="col-lg-4">
+                <!-- Quick Stats -->
+                <div class="row g-3 mb-4">
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <div class="stat-value">₹<span th:text="${#numbers.formatDecimal(totalCost, 0, 0)}">0</span>
+                            </div>
+                            <div class="stat-label">Total Cost</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="stat-box">
+                            <div class="stat-value" th:text="${serviceCount}">0</div>
+                            <div class="stat-label">Services</div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Vehicle Information -->
+                <div class="content-card">
+                    <h6 class="mb-3"><i class="fas fa-info-circle me-2 text-primary"></i>Vehicle Details</h6>
+
+                    <div class="info-row">
+                        <span class="info-label">Year</span>
+                        <span th:text="${vehicle.year}">2022</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Fuel Type</span>
+                        <span th:text="${vehicle.fuelType.displayName}">Petrol</span>
+                    </div>
+                    <div class="info-row" th:if="${vehicle.engineCapacity != null}">
+                        <span class="info-label">Engine</span>
+                        <span th:text="${vehicle.engineCapacity + ' cc'}">100 cc</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Odometer</span>
+                        <span th:text="${#numbers.formatInteger(vehicle.currentOdometer, 0, 'COMMA')} + ' km'">5000
+                            km</span>
+                    </div>
+                    <div class="info-row" th:if="${vehicle.purchaseDate != null}">
+                        <span class="info-label">Purchased</span>
+                        <span th:text="${vehicle.purchaseDate}">2022-06-15</span>
+                    </div>
+                    <div class="info-row">
+                        <span class="info-label">Next Service</span>
+                        <span
+                            th:text="${vehicle.nextServiceDate != null ? vehicle.nextServiceDate : 'Not Set'}">2026-02-01</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Right Column - Service History -->
+            <div class="col-lg-8">
+                <div class="content-card">
+                    <div class="d-flex justify-content-between align-items-center mb-3">
+                        <h6 class="mb-0"><i class="fas fa-history me-2 text-info"></i>Service History</h6>
+                        <a th:href="@{/services/add(vehicleId=${vehicle.id})}" class="btn btn-sm btn-primary-gradient">
+                            <i class="fas fa-plus me-1"></i>Add
+                        </a>
+                    </div>
+
+                    <div th:if="${#lists.isEmpty(serviceRecords)}" class="empty-state">
+                        <i class="fas fa-wrench fa-2x mb-2" style="opacity: 0.5;"></i>
+                        <p>No service records yet</p>
+                        <a th:href="@{/services/add(vehicleId=${vehicle.id})}" class="btn btn-sm btn-outline-light">
+                            Log First Service
+                        </a>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(serviceRecords)}" class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Date</th>
+                                    <th>Type</th>
+                                    <th>Odometer</th>
+                                    <th>Cost</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="record : ${serviceRecords}">
+                                    <td th:text="${record.serviceDate}">2026-01-10</td>
+                                    <td>
+                                        <span class="badge badge-service bg-secondary"
+                                            th:text="${record.serviceType.displayName}">Oil Change</span>
+                                    </td>
+                                    <td th:text="${#numbers.formatInteger(record.odometerReading, 0, 'COMMA')} + ' km'">
+                                        6500 km</td>
+                                    <td class="fw-bold" th:text="'₹' + ${#numbers.formatDecimal(record.cost, 0, 0)}">
+                                        ₹800</td>
+                                    <td>
+                                        <a th:href="@{/services/{id}/edit(id=${record.id})}"
+                                            class="btn btn-sm btn-outline-light">
+                                            <i class="fas fa-edit"></i>
+                                        </a>
+                                        <form th:action="@{/services/{id}/delete(id=${record.id})}" method="post"
+                                            class="d-inline" onsubmit="return confirm('Delete this service record?');">
+                                            <input type="hidden" name="vehicleId" th:value="${vehicle.id}">
+                                            <button type="submit" class="btn btn-sm btn-outline-danger">
+                                                <i class="fas fa-trash"></i>
+                                            </button>
+                                        </form>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

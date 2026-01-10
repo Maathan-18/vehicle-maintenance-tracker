@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${editMode} ? 'Edit Service Record' : 'Log Service'">Log Service - Smart Vehicle Maintenance Tracker
+    </title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --accent-color: #0f3460;
+            --primary-color: #667eea;
+            --text-light: rgba(255, 255, 255, 0.87);
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--accent-color) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-light);
+        }
+
+        .navbar {
+            background: rgba(22, 33, 62, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+        }
+
+        .form-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 2rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .form-label {
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .form-control,
+        .form-select {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: var(--text-light);
+            border-radius: 10px;
+            padding: 0.75rem 1rem;
+        }
+
+        .form-control:focus,
+        .form-select:focus {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--primary-color);
+            color: var(--text-light);
+            box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.25);
+        }
+
+        .form-select option {
+            background: var(--card-bg);
+            color: var(--text-light);
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            padding: 0.75rem 2rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .section-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            margin-bottom: 1.5rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--primary-color);
+            display: inline-block;
+        }
+
+        .required-field::after {
+            content: " *";
+            color: #ff6b6b;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+
+        .invalid-feedback {
+            color: #ff6b6b;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-car me-2"></i>VehicleTracker
+            </a>
+            <div class="collapse navbar-collapse">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/dashboard}">Dashboard</a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/vehicles}">Vehicles</a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <div class="row justify-content-center">
+            <div class="col-lg-8">
+                <!-- Page Header -->
+                <div class="mb-4">
+                    <a th:href="@{/dashboard}" class="text-muted text-decoration-none">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                    <h2 class="mt-3 mb-1" th:text="${editMode} ? 'Edit Service Record' : 'Log Service Record'">Log
+                        Service Record</h2>
+                    <p class="text-muted">Record maintenance details and costs for your vehicle</p>
+                </div>
+
+                <!-- Error Message -->
+                <div th:if="${errorMessage}" class="alert alert-danger alert-dismissible fade show" role="alert">
+                    <i class="fas fa-exclamation-circle me-2"></i><span th:text="${errorMessage}"></span>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+
+                <!-- Service Form -->
+                <div class="form-card">
+                    <form th:action="${editMode} ? @{/services/{id}/edit(id=${service.id})} : @{/services/add}"
+                        th:object="${service}" method="post" novalidate>
+
+                        <!-- Service Details -->
+                        <div class="section-title">
+                            <i class="fas fa-wrench me-2"></i>Service Details
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label required-field" for="vehicleId">Vehicle</label>
+                                <select class="form-select" th:field="*{vehicleId}" id="vehicleId" required>
+                                    <option value="">Select Vehicle</option>
+                                    <option th:each="vehicle : ${vehicles}" th:value="${vehicle.id}"
+                                        th:text="${vehicle.regNumber + ' - ' + vehicle.make + ' ' + vehicle.model}">
+                                        KL01AB1234 - Hero Splendor
+                                    </option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required-field" for="serviceType">Service Type</label>
+                                <select class="form-select" th:field="*{serviceType}" id="serviceType" required>
+                                    <option value="">Select Service Type</option>
+                                    <option th:each="type : ${serviceTypes}" th:value="${type}"
+                                        th:text="${type.displayName}">Oil Change</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label required-field" for="serviceDate">Service Date</label>
+                                <input type="date" class="form-control" th:field="*{serviceDate}" id="serviceDate"
+                                    required>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label required-field" for="odometerReading">Odometer Reading
+                                    (km)</label>
+                                <input type="number" class="form-control" th:field="*{odometerReading}"
+                                    th:classappend="${#fields.hasErrors('odometerReading')} ? 'is-invalid' : ''"
+                                    id="odometerReading" min="0" placeholder="e.g., 6500" required>
+                                <div th:if="${#fields.hasErrors('odometerReading')}" class="invalid-feedback">
+                                    <span th:errors="*{odometerReading}"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label required-field" for="cost">Total Cost (₹)</label>
+                                <input type="number" class="form-control" th:field="*{cost}"
+                                    th:classappend="${#fields.hasErrors('cost')} ? 'is-invalid' : ''" id="cost" min="0"
+                                    step="0.01" placeholder="e.g., 800" required>
+                                <div th:if="${#fields.hasErrors('cost')}" class="invalid-feedback">
+                                    <span th:errors="*{cost}"></span>
+                                </div>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="serviceCenterName">Service Center Name</label>
+                                <input type="text" class="form-control" th:field="*{serviceCenterName}"
+                                    id="serviceCenterName" placeholder="e.g., Honda Authorized Service">
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="form-label" for="description">Description (Optional)</label>
+                            <textarea class="form-control" th:field="*{description}" id="description" rows="3"
+                                placeholder="e.g., Changed engine oil with Mobil Fully Synthetic 10W-40"></textarea>
+                        </div>
+
+                        <!-- Next Service -->
+                        <div class="section-title">
+                            <i class="fas fa-calendar-alt me-2"></i>Next Service (Optional)
+                        </div>
+
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label" for="nextServiceDate">Next Service Date</label>
+                                <input type="date" class="form-control" th:field="*{nextServiceDate}"
+                                    id="nextServiceDate">
+                                <small class="text-muted">Leave blank to auto-calculate (6 months)</small>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="nextServiceOdometer">Next Service Odometer (km)</label>
+                                <input type="number" class="form-control" th:field="*{nextServiceOdometer}"
+                                    id="nextServiceOdometer" min="0" placeholder="e.g., 9500">
+                                <small class="text-muted">Leave blank to auto-calculate (+3000 km)</small>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="d-flex gap-3">
+                            <button type="submit" class="btn btn-primary-gradient">
+                                <i class="fas fa-save me-2"></i>
+                                <span th:text="${editMode} ? 'Update Record' : 'Save Record'">Save Record</span>
+                            </button>
+                            <a th:href="@{/dashboard}" class="btn btn-outline-light">Cancel</a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

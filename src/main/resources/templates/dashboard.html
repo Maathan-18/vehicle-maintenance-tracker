@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" xmlns:sec="http://www.thymeleaf.org/extras/spring-security" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - Smart Vehicle Maintenance Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        :root {
+            --primary-color: #667eea;
+            --secondary-color: #764ba2;
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --accent-color: #0f3460;
+            --text-light: rgba(255, 255, 255, 0.87);
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--accent-color) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-light);
+        }
+
+        .navbar {
+            background: rgba(22, 33, 62, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: white !important;
+        }
+
+        .stat-card {
+            background: linear-gradient(135deg, var(--card-bg) 0%, var(--accent-color) 100%);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            transition: transform 0.3s, box-shadow 0.3s;
+        }
+
+        .stat-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .stat-icon {
+            width: 60px;
+            height: 60px;
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stat-icon.vehicles {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+        }
+
+        .stat-icon.cost {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .stat-icon.upcoming {
+            background: linear-gradient(135deg, #4facfe, #00f2fe);
+        }
+
+        .stat-icon.reminders {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+        }
+
+        .stat-value {
+            font-size: 2rem;
+            font-weight: 700;
+            margin: 0.5rem 0;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 0.9rem;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .content-card h5 {
+            margin-bottom: 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, var(--primary-color), var(--secondary-color));
+            border: none;
+            border-radius: 12px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .table {
+            color: var(--text-light);
+        }
+
+        .table th {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .table td {
+            border-color: rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .badge-due-soon {
+            background: linear-gradient(135deg, #f093fb, #f5576c);
+        }
+
+        .badge-overdue {
+            background: #dc3545;
+        }
+
+        .badge-ok {
+            background: linear-gradient(135deg, #43e97b, #38f9d7);
+            color: #1a1a2e;
+        }
+
+        .quick-link {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            padding: 1rem;
+            background: rgba(255, 255, 255, 0.05);
+            border-radius: 12px;
+            text-decoration: none;
+            color: var(--text-light);
+            transition: all 0.3s;
+            margin-bottom: 0.75rem;
+        }
+
+        .quick-link:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            transform: translateX(5px);
+        }
+
+        .quick-link i {
+            font-size: 1.25rem;
+            width: 24px;
+            text-align: center;
+        }
+
+        .chart-container {
+            position: relative;
+            height: 300px;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+        }
+
+        .empty-state i {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container">
+            <a class="navbar-brand" href="#">
+                <i class="fas fa-car me-2"></i>VehicleTracker
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/dashboard}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/vehicles}">
+                            <i class="fas fa-car me-1"></i>Vehicles
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                            data-bs-toggle="dropdown" aria-expanded="false">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span th:text="${userName}">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="d-inline">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Welcome Header -->
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+                <h2 class="mb-1">Welcome back, <span th:text="${userName}">User</span>!</h2>
+                <p class="text-muted mb-0">Here's an overview of your vehicle maintenance</p>
+            </div>
+            <a th:href="@{/vehicles/add}" class="btn btn-primary-gradient">
+                <i class="fas fa-plus me-2"></i>Add Vehicle
+            </a>
+        </div>
+
+        <!-- Stats Row -->
+        <div class="row g-4 mb-4">
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="stat-label mb-0">Total Vehicles</p>
+                            <p class="stat-value" th:text="${dashboard.totalVehicles}">0</p>
+                        </div>
+                        <div class="stat-icon vehicles">
+                            <i class="fas fa-car"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="stat-label mb-0">Total Maintenance Cost</p>
+                            <p class="stat-value">₹<span
+                                    th:text="${#numbers.formatDecimal(dashboard.totalMaintenanceCost, 0, 0)}">0</span>
+                            </p>
+                        </div>
+                        <div class="stat-icon cost">
+                            <i class="fas fa-rupee-sign"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="stat-label mb-0">Upcoming Services</p>
+                            <p class="stat-value" th:text="${dashboard.upcomingServicesCount}">0</p>
+                        </div>
+                        <div class="stat-icon upcoming">
+                            <i class="fas fa-calendar-alt"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <div class="col-lg-3 col-md-6">
+                <div class="stat-card">
+                    <div class="d-flex justify-content-between align-items-start">
+                        <div>
+                            <p class="stat-label mb-0">Unread Reminders</p>
+                            <p class="stat-value" th:text="${dashboard.unreadRemindersCount}">0</p>
+                        </div>
+                        <div class="stat-icon reminders">
+                            <i class="fas fa-bell"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Content Row -->
+        <div class="row g-4">
+            <!-- Upcoming Services -->
+            <div class="col-lg-8">
+                <div class="content-card">
+                    <h5><i class="fas fa-clock text-info"></i>Upcoming Services</h5>
+
+                    <div th:if="${#lists.isEmpty(dashboard.upcomingServices)}" class="empty-state">
+                        <i class="fas fa-check-circle"></i>
+                        <p>No upcoming services scheduled</p>
+                    </div>
+
+                    <div th:unless="${#lists.isEmpty(dashboard.upcomingServices)}" class="table-responsive">
+                        <table class="table table-borderless">
+                            <thead>
+                                <tr>
+                                    <th>Vehicle</th>
+                                    <th>Due Date</th>
+                                    <th>Days Until Due</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr th:each="service : ${dashboard.upcomingServices}">
+                                    <td>
+                                        <strong th:text="${service.vehicleRegNumber}">KL01AB1234</strong>
+                                        <br><small class="text-muted" th:text="${service.vehicleName}">Hero
+                                            Splendor</small>
+                                    </td>
+                                    <td th:text="${service.dueDate}">2026-01-15</td>
+                                    <td>
+                                        <span th:if="${service.daysUntilDue < 0}" class="badge badge-overdue">
+                                            Overdue by <span th:text="${-service.daysUntilDue}">0</span> days
+                                        </span>
+                                        <span th:if="${service.daysUntilDue >= 0 and service.daysUntilDue <= 7}"
+                                            class="badge badge-due-soon">
+                                            <span th:text="${service.daysUntilDue}">0</span> days
+                                        </span>
+                                        <span th:if="${service.daysUntilDue > 7}" class="badge badge-ok">
+                                            <span th:text="${service.daysUntilDue}">0</span> days
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <a th:href="@{/services/add(vehicleId=${service.vehicleId})}"
+                                            class="btn btn-sm btn-primary-gradient">
+                                            <i class="fas fa-wrench"></i> Log Service
+                                        </a>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Monthly Cost Chart -->
+                <div class="content-card mt-4">
+                    <h5><i class="fas fa-chart-line text-success"></i>Monthly Maintenance Cost</h5>
+                    <div class="chart-container">
+                        <canvas id="monthlyCostChart"></canvas>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Links & Cost by Category -->
+            <div class="col-lg-4">
+                <!-- Quick Links -->
+                <div class="content-card mb-4">
+                    <h5><i class="fas fa-bolt text-warning"></i>Quick Actions</h5>
+                    <a th:href="@{/vehicles/add}" class="quick-link">
+                        <i class="fas fa-plus-circle text-primary"></i>
+                        <span>Add New Vehicle</span>
+                    </a>
+                    <a th:href="@{/services/add}" class="quick-link">
+                        <i class="fas fa-wrench text-info"></i>
+                        <span>Log New Service</span>
+                    </a>
+                    <a th:href="@{/vehicles}" class="quick-link">
+                        <i class="fas fa-list text-success"></i>
+                        <span>View All Vehicles</span>
+                    </a>
+                </div>
+
+                <!-- Cost by Category -->
+                <div class="content-card">
+                    <h5><i class="fas fa-chart-pie text-danger"></i>Cost by Category</h5>
+                    <div class="chart-container" style="height: 250px;">
+                        <canvas id="costByCategoryChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script th:inline="javascript">
+        // Monthly Cost Chart Data
+        const monthlyCosts = /*[[${dashboard.monthlyCosts}]]*/ {};
+        const months = Object.keys(monthlyCosts);
+        const costs = Object.values(monthlyCosts);
+
+        const ctxLine = document.getElementById('monthlyCostChart').getContext('2d');
+        new Chart(ctxLine, {
+            type: 'line',
+            data: {
+                labels: months.length > 0 ? months : ['No Data'],
+                datasets: [{
+                    label: 'Cost (₹)',
+                    data: costs.length > 0 ? costs : [0],
+                    borderColor: '#667eea',
+                    backgroundColor: 'rgba(102, 126, 234, 0.1)',
+                    fill: true,
+                    tension: 0.4,
+                    pointBackgroundColor: '#667eea',
+                    pointBorderColor: '#fff',
+                    pointBorderWidth: 2,
+                    pointRadius: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        display: false
+                    }
+                },
+                scales: {
+                    x: {
+                        grid: {
+                            color: 'rgba(255,255,255,0.05)'
+                        },
+                        ticks: {
+                            color: 'rgba(255,255,255,0.6)'
+                        }
+                    },
+                    y: {
+                        grid: {
+                            color: 'rgba(255,255,255,0.05)'
+                        },
+                        ticks: {
+                            color: 'rgba(255,255,255,0.6)',
+                            callback: function (value) {
+                                return '₹' + value;
+                            }
+                        }
+                    }
+                }
+            }
+        });
+
+        // Cost by Category Chart
+        const costByCategory = /*[[${dashboard.costByCategory}]]*/ {};
+        const categories = Object.keys(costByCategory);
+        const categoryValues = Object.values(costByCategory);
+
+        const ctxPie = document.getElementById('costByCategoryChart').getContext('2d');
+        new Chart(ctxPie, {
+            type: 'doughnut',
+            data: {
+                labels: categories.length > 0 ? categories : ['No Data'],
+                datasets: [{
+                    data: categoryValues.length > 0 ? categoryValues : [1],
+                    backgroundColor: [
+                        '#667eea',
+                        '#764ba2',
+                        '#f093fb',
+                        '#f5576c',
+                        '#4facfe',
+                        '#00f2fe',
+                        '#43e97b',
+                        '#38f9d7',
+                        '#fa709a'
+                    ],
+                    borderWidth: 0
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                plugins: {
+                    legend: {
+                        position: 'bottom',
+                        labels: {
+                            color: 'rgba(255,255,255,0.6)',
+                            padding: 10,
+                            usePointStyle: true
+                        }
+                    }
+                },
+                cutout: '60%'
+            }
+        });
+    </script>
+</body>
+
+</html>
