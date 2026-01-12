@@ -86,7 +86,7 @@ Card-based layout with fuel type badges and odometer tracking
 
 ## 👤 Author
 
-Built as part of Java Full Stack Development course
+**Maathan** - Java Full Stack Development
 
 ## 📄 License
 

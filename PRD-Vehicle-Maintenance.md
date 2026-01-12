@@ -3,7 +3,7 @@
 
 **Version:** 2.0  
 **Date:** January 2026  
-**Author:** Development Team  
+**Author:** Maathan  
 **Status:** ✅ MVP Implemented  
 
 ---
