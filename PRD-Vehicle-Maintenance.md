@@ -1,20 +1,39 @@
 # Product Requirement Document (PRD)
-## Smart Vehicle Maintenance Tracker
+## MAINTENANCETRACKER - Smart Vehicle Maintenance Tracker
 
-**Version:** 1.0  
+**Version:** 2.0  
 **Date:** January 2026  
 **Author:** Development Team  
-**Status:** Final  
+**Status:** ✅ MVP Implemented  
+
+---
+
+## Implementation Status
+
+| Feature | Status | Notes |
+|---------|--------|-------|
+| User Authentication | ✅ Complete | Spring Security + BCrypt |
+| Vehicle Management | ✅ Complete | CRUD with validation |
+| Service Records | ✅ Complete | With payment method tracking |
+| Service History Page | ✅ Complete | Dedicated `/services` page |
+| Dashboard Analytics | ✅ Complete | Chart.js integration |
+| Automated Reminders | ✅ Complete | Spring Scheduler `@Scheduled` |
+| Custom Exceptions | ✅ Complete | `@ControllerAdvice` |
+| Java Streams Demo | ✅ Complete | Cost calculations |
 
 ---
 
 ## 1. Executive Summary
 
-The **Smart Vehicle Maintenance Tracker** is a full-stack web application designed to help vehicle owners efficiently manage maintenance schedules, track service history, monitor costs, and receive timely service reminders. The system enables users to maintain records for multiple vehicles, view service centers with ratings, and gain insights through analytics dashboards.
+The **MAINTENANCETRACKER** is a full-stack web application designed to help vehicle owners efficiently manage maintenance schedules, track service history, monitor costs, and receive timely service reminders. The system enables users to maintain records for multiple vehicles and gain insights through analytics dashboards.
 
 **Target Users:** Individual vehicle owners (motorcycles, cars, scooters)  
 **Timeline:** 1 week development  
-**Tech Stack:** Spring Boot (Backend), React/JSP (Frontend), MySQL, Hibernate, Spring Scheduler
+**Tech Stack:** 
+- **Backend:** Spring Boot 3.2.1, Spring Security, Spring Data JPA
+- **Frontend:** Thymeleaf + Bootstrap 5 + Chart.js
+- **Database:** MySQL 8.x with Hibernate ORM
+- **Scheduler:** Spring Scheduler for automated reminders
 
 ---
 
@@ -169,13 +188,13 @@ Empower vehicle owners with a centralized, intelligent platform to never miss a 
   - Service type (dropdown: Oil Change, Filter Replacement, Chain Lube, Tyre Service, Battery Replacement, Brake Service, Suspension, General Service, Other).
   - Description (optional text area, e.g., "Replaced oil with Mobil Fully Synthetic").
   - Total cost (numeric, currency).
-  - Service center (dropdown from service center list, or allow "Other").
+  - **Payment method (dropdown: Cash, Card, UPI, Net Banking).** ✅ *Implemented*
+  - Service center name (text input).
   - Next service due—date (optional, date picker).
   - Next service due—odometer (optional, numeric, km).
-  - Receipt upload (optional, max 5MB).
 - Validation: all required fields, odometer >= last recorded odometer (or warn user).
 - On save: auto-calculate "next service due" if not provided (e.g., +3000 km or +6 months from last service).
-- Success: redirect to vehicle detail or maintenance history.
+- Success: redirect to vehicle detail or service history page.
 
 **US-302: View Maintenance History**
 - **As a** logged-in user,  
@@ -690,16 +709,17 @@ CREATE TABLE service_record (
     service_center_id BIGINT,
     service_date DATE NOT NULL,
     odometer_reading INT NOT NULL,
-    service_type ENUM('Oil Change', 'Filter Replacement', 'Chain Lube', 'Tyre Service', 'Battery Replacement', 'Brake Service', 'Suspension', 'General Service', 'Other') NOT NULL,
+    service_type ENUM('OIL_CHANGE', 'FILTER_REPLACEMENT', 'CHAIN_LUBE', 'TYRE_SERVICE', 'BATTERY_REPLACEMENT', 'BRAKE_SERVICE', 'SUSPENSION', 'GENERAL_SERVICE', 'OTHER') NOT NULL,
     description TEXT,
     cost DECIMAL(10, 2) NOT NULL,
+    payment_method VARCHAR(20),  -- CASH, CARD, UPI, NET_BANKING
+    service_center_name VARCHAR(100),
     next_service_date DATE,
     next_service_odometer INT,
     receipt_path VARCHAR(500),
     created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    FOREIGN KEY (vehicle_id) REFERENCES vehicle(id) ON DELETE CASCADE,
-    FOREIGN KEY (service_center_id) REFERENCES service_center(id) ON SET NULL
+    FOREIGN KEY (vehicle_id) REFERENCES vehicle(id) ON DELETE CASCADE
 );
 ```
 
