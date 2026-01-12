@@ -21,8 +21,8 @@ import java.time.LocalDateTime;
  */
 @Entity
 @Table(name = "service_records", indexes = {
-    @Index(name = "idx_service_vehicle", columnList = "vehicle_id"),
-    @Index(name = "idx_service_date", columnList = "service_date")
+        @Index(name = "idx_service_vehicle", columnList = "vehicle_id"),
+        @Index(name = "idx_service_date", columnList = "service_date")
 })
 @Getter
 @Setter
@@ -78,6 +78,9 @@ public class ServiceRecord {
     @Size(max = 500, message = "Receipt path cannot exceed 500 characters")
     @Column(name = "receipt_path", length = 500)
     private String receiptPath;
+
+    @Column(name = "payment_method", length = 20)
+    private String paymentMethod; // CASH, CARD, UPI, NET_BANKING
 
     @CreationTimestamp
     @Column(name = "created_at", updatable = false)

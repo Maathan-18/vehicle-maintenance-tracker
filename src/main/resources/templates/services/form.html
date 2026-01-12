@@ -118,7 +118,7 @@
     <nav class="navbar navbar-expand-lg sticky-top">
         <div class="container">
             <a class="navbar-brand" href="#">
-                <i class="fas fa-car me-2"></i>VehicleTracker
+                <i class="fas fa-tools me-2"></i>MAINTENANCETRACKER
             </a>
             <div class="collapse navbar-collapse">
                 <ul class="navbar-nav me-auto">
@@ -219,10 +219,22 @@
                             </div>
                         </div>
 
-                        <div class="mb-4">
-                            <label class="form-label" for="description">Description (Optional)</label>
-                            <textarea class="form-control" th:field="*{description}" id="description" rows="3"
-                                placeholder="e.g., Changed engine oil with Mobil Fully Synthetic 10W-40"></textarea>
+                        <div class="row g-3 mb-4">
+                            <div class="col-md-6">
+                                <label class="form-label" for="description">Description (Optional)</label>
+                                <textarea class="form-control" th:field="*{description}" id="description" rows="3"
+                                    placeholder="e.g., Changed engine oil with Mobil Fully Synthetic 10W-40"></textarea>
+                            </div>
+                            <div class="col-md-6">
+                                <label class="form-label" for="paymentMethod">Payment Method</label>
+                                <select class="form-select" th:field="*{paymentMethod}" id="paymentMethod">
+                                    <option value="">Select Payment Method</option>
+                                    <option value="CASH">Cash</option>
+                                    <option value="CARD">Card</option>
+                                    <option value="UPI">UPI</option>
+                                    <option value="NET_BANKING">Net Banking</option>
+                                </select>
+                            </div>
                         </div>
 
                         <!-- Next Service -->

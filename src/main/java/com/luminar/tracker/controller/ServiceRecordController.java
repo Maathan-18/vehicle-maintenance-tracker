@@ -48,6 +48,25 @@ public class ServiceRecordController {
     }
 
     /**
+     * List all service records for current user
+     */
+    @GetMapping
+    public String listServices(Authentication authentication, Model model) {
+        User user = getCurrentUser(authentication);
+        if (user == null)
+            return "redirect:/login";
+
+        List<ServiceRecord> services = serviceRecordService.getServiceRecordsByUserId(user.getId());
+        java.math.BigDecimal totalCost = serviceRecordService.getTotalCostForUser(user.getId());
+
+        model.addAttribute("services", services);
+        model.addAttribute("totalCost", totalCost);
+        model.addAttribute("userName", user.getName());
+
+        return "services/list";
+    }
+
+    /**
      * Show add service form (with optional vehicle pre-selected)
      */
     @GetMapping("/add")
@@ -57,7 +76,8 @@ public class ServiceRecordController {
             Model model) {
 
         User user = getCurrentUser(authentication);
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         List<Vehicle> vehicles = vehicleService.getVehiclesByUserId(user.getId());
 
@@ -85,7 +105,8 @@ public class ServiceRecordController {
             RedirectAttributes redirectAttributes) {
 
         User user = getCurrentUser(authentication);
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         if (bindingResult.hasErrors()) {
             List<Vehicle> vehicles = vehicleService.getVehiclesByUserId(user.getId());
@@ -119,7 +140,8 @@ public class ServiceRecordController {
             Model model) {
 
         User user = getCurrentUser(authentication);
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         ServiceRecord record = serviceRecordService.getServiceRecordById(id);
         List<Vehicle> vehicles = vehicleService.getVehiclesByUserId(user.getId());
@@ -135,6 +157,7 @@ public class ServiceRecordController {
                 .serviceCenterName(record.getServiceCenterName())
                 .nextServiceDate(record.getNextServiceDate())
                 .nextServiceOdometer(record.getNextServiceOdometer())
+                .paymentMethod(record.getPaymentMethod())
                 .build();
 
         model.addAttribute("service", serviceDTO);
@@ -158,7 +181,8 @@ public class ServiceRecordController {
             RedirectAttributes redirectAttributes) {
 
         User user = getCurrentUser(authentication);
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         if (bindingResult.hasErrors()) {
             List<Vehicle> vehicles = vehicleService.getVehiclesByUserId(user.getId());
@@ -193,7 +217,8 @@ public class ServiceRecordController {
             RedirectAttributes redirectAttributes) {
 
         User user = getCurrentUser(authentication);
-        if (user == null) return "redirect:/login";
+        if (user == null)
+            return "redirect:/login";
 
         try {
             serviceRecordService.deleteServiceRecord(id, user.getId());

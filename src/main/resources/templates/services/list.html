@@ -1,0 +1,352 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org" lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Service History - Smart Vehicle Maintenance Tracker</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+    <style>
+        :root {
+            --dark-bg: #1a1a2e;
+            --card-bg: #16213e;
+            --accent-color: #0f3460;
+            --primary-color: #667eea;
+            --text-light: rgba(255, 255, 255, 0.87);
+            --text-muted: rgba(255, 255, 255, 0.6);
+        }
+
+        body {
+            background: linear-gradient(135deg, var(--dark-bg) 0%, var(--accent-color) 100%);
+            min-height: 100vh;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            color: var(--text-light);
+        }
+
+        .navbar {
+            background: rgba(22, 33, 62, 0.95);
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .navbar-brand {
+            font-weight: 700;
+            color: white !important;
+        }
+
+        .nav-link {
+            color: var(--text-muted) !important;
+            transition: color 0.3s;
+        }
+
+        .nav-link:hover,
+        .nav-link.active {
+            color: white !important;
+        }
+
+        .page-header {
+            margin-bottom: 2rem;
+        }
+
+        .content-card {
+            background: var(--card-bg);
+            border-radius: 20px;
+            padding: 1.5rem;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .stat-summary {
+            background: linear-gradient(135deg, var(--primary-color), #764ba2);
+            border-radius: 16px;
+            padding: 1.5rem;
+            text-align: center;
+        }
+
+        .stat-summary .value {
+            font-size: 2.5rem;
+            font-weight: 700;
+        }
+
+        .stat-summary .label {
+            font-size: 0.9rem;
+            opacity: 0.9;
+        }
+
+        .table {
+            color: var(--text-light);
+        }
+
+        .table th {
+            border-color: rgba(255, 255, 255, 0.1);
+            color: var(--text-muted);
+            font-weight: 500;
+            background: rgba(255, 255, 255, 0.02);
+        }
+
+        .table td {
+            border-color: rgba(255, 255, 255, 0.05);
+            vertical-align: middle;
+        }
+
+        .table tbody tr:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .badge-service {
+            padding: 0.4rem 0.75rem;
+            border-radius: 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+        }
+
+        .badge-payment {
+            padding: 0.3rem 0.6rem;
+            border-radius: 6px;
+            font-size: 0.7rem;
+            font-weight: 600;
+        }
+
+        .badge-cash {
+            background: #43e97b;
+            color: #1a1a2e;
+        }
+
+        .badge-card {
+            background: #4facfe;
+            color: white;
+        }
+
+        .badge-upi {
+            background: #764ba2;
+            color: white;
+        }
+
+        .badge-net {
+            background: #f5576c;
+            color: white;
+        }
+
+        .btn-primary-gradient {
+            background: linear-gradient(135deg, #667eea, #764ba2);
+            border: none;
+            border-radius: 12px;
+            padding: 0.6rem 1.5rem;
+            font-weight: 500;
+            transition: all 0.3s;
+        }
+
+        .btn-primary-gradient:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 10px 20px rgba(102, 126, 234, 0.3);
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 4rem 2rem;
+        }
+
+        .empty-state i {
+            font-size: 4rem;
+            color: var(--primary-color);
+            margin-bottom: 1rem;
+            opacity: 0.5;
+        }
+
+        .alert {
+            border-radius: 12px;
+            border: none;
+        }
+
+        .cost-cell {
+            font-weight: 600;
+            color: #43e97b;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Navigation -->
+    <nav class="navbar navbar-expand-lg sticky-top">
+        <div class="container-fluid px-4">
+            <a class="navbar-brand" th:href="@{/dashboard}">
+                <i class="fas fa-tools me-2"></i>MAINTENANCETRACKER
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav me-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/dashboard}">
+                            <i class="fas fa-tachometer-alt me-1"></i>Dashboard
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link" th:href="@{/vehicles}">
+                            <i class="fas fa-car me-1"></i>Vehicles
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link active" th:href="@{/services}">
+                            <i class="fas fa-wrench me-1"></i>Services
+                        </a>
+                    </li>
+                </ul>
+                <ul class="navbar-nav">
+                    <li class="nav-item dropdown">
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">
+                            <i class="fas fa-user-circle me-1"></i>
+                            <span th:text="${userName}">User</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end">
+                            <li>
+                                <form th:action="@{/logout}" method="post" class="d-inline">
+                                    <button type="submit" class="dropdown-item">
+                                        <i class="fas fa-sign-out-alt me-2"></i>Logout
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Main Content -->
+    <div class="container py-4">
+        <!-- Page Header -->
+        <div class="d-flex justify-content-between align-items-center page-header">
+            <div>
+                <h2 class="mb-1">Service History</h2>
+                <p class="text-muted mb-0">Complete log of all maintenance activities and costs</p>
+            </div>
+            <a th:href="@{/services/add}" class="btn btn-primary-gradient">
+                <i class="fas fa-plus me-2"></i>Log New Service
+            </a>
+        </div>
+
+        <!-- Total Cost Summary -->
+        <div class="row mb-4">
+            <div class="col-md-4">
+                <div class="stat-summary text-white">
+                    <div class="value">₹<span th:text="${#numbers.formatDecimal(totalCost, 0, 0)}">0</span></div>
+                    <div class="label">Total Maintenance Cost</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-summary text-white" style="background: linear-gradient(135deg, #43e97b, #38f9d7);">
+                    <div class="value" th:text="${#lists.size(services)}">0</div>
+                    <div class="label" style="color: #1a1a2e;">Total Services</div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="stat-summary text-white" style="background: linear-gradient(135deg, #f093fb, #f5576c);">
+                    <div class="value" th:if="${#lists.isEmpty(services)}">-</div>
+                    <div class="value" th:unless="${#lists.isEmpty(services)}" th:text="${services[0].serviceDate}">-
+                    </div>
+                    <div class="label">Last Service</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Success/Error Messages -->
+        <div th:if="${successMessage}" class="alert alert-success alert-dismissible fade show" role="alert">
+            <i class="fas fa-check-circle me-2"></i><span th:text="${successMessage}"></span>
+            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+
+        <!-- Services Table -->
+        <div class="content-card">
+            <div th:if="${#lists.isEmpty(services)}" class="empty-state">
+                <i class="fas fa-wrench"></i>
+                <h4>No Service Records</h4>
+                <p class="text-muted mb-4">Start logging maintenance activities for your vehicles</p>
+                <a th:href="@{/services/add}" class="btn btn-primary-gradient">
+                    <i class="fas fa-plus me-2"></i>Log Your First Service
+                </a>
+            </div>
+
+            <div th:unless="${#lists.isEmpty(services)}" class="table-responsive">
+                <table class="table table-borderless">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Vehicle</th>
+                            <th>Service Type</th>
+                            <th>Description</th>
+                            <th>Odometer</th>
+                            <th>Cost</th>
+                            <th>Payment</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="service : ${services}">
+                            <td th:text="${service.serviceDate}">2026-01-10</td>
+                            <td>
+                                <a th:href="@{/vehicles/{id}(id=${service.vehicle.id})}"
+                                    class="text-decoration-none text-light">
+                                    <strong th:text="${service.vehicle.regNumber}">KL01AB1234</strong>
+                                    <br><small class="text-muted"
+                                        th:text="${service.vehicle.make + ' ' + service.vehicle.model}">Hero
+                                        Splendor</small>
+                                </a>
+                            </td>
+                            <td>
+                                <span class="badge badge-service bg-secondary"
+                                    th:text="${service.serviceType.displayName}">Oil Change</span>
+                            </td>
+                            <td>
+                                <span th:if="${service.description != null}"
+                                    th:text="${#strings.abbreviate(service.description, 30)}">Description</span>
+                                <span th:unless="${service.description != null}" class="text-muted">-</span>
+                            </td>
+                            <td th:text="${#numbers.formatInteger(service.odometerReading, 0, 'COMMA')} + ' km'">5000 km
+                            </td>
+                            <td class="cost-cell" th:text="'₹' + ${#numbers.formatDecimal(service.cost, 0, 0)}">₹800
+                            </td>
+                            <td>
+                                <span th:if="${service.paymentMethod == 'CASH'}"
+                                    class="badge badge-payment badge-cash">CASH</span>
+                                <span th:if="${service.paymentMethod == 'CARD'}"
+                                    class="badge badge-payment badge-card">CARD</span>
+                                <span th:if="${service.paymentMethod == 'UPI'}"
+                                    class="badge badge-payment badge-upi">UPI</span>
+                                <span th:if="${service.paymentMethod == 'NET_BANKING'}"
+                                    class="badge badge-payment badge-net">NET</span>
+                                <span th:if="${service.paymentMethod == null}" class="text-muted">-</span>
+                            </td>
+                            <td>
+                                <a th:href="@{/services/{id}/edit(id=${service.id})}"
+                                    class="btn btn-sm btn-outline-light">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form th:action="@{/services/{id}/delete(id=${service.id})}" method="post"
+                                    class="d-inline" onsubmit="return confirm('Delete this service record?');">
+                                    <input type="hidden" name="vehicleId" th:value="${service.vehicle.id}">
+                                    <button type="submit" class="btn btn-sm btn-outline-danger">
+                                        <i class="fas fa-trash"></i>
+                                    </button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                    <tfoot>
+                        <tr style="border-top: 2px solid rgba(255,255,255,0.1);">
+                            <td colspan="5" class="text-end"><strong>Total</strong></td>
+                            <td class="cost-cell"><strong
+                                    th:text="'₹' + ${#numbers.formatDecimal(totalCost, 0, 0)}">₹0</strong></td>
+                            <td colspan="2"></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+
+</html>

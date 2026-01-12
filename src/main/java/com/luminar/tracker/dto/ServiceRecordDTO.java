@@ -47,6 +47,8 @@ public class ServiceRecordDTO {
 
     private Integer nextServiceOdometer;
 
+    private String paymentMethod; // CASH, CARD, UPI, NET_BANKING
+
     // Transient fields for display
     private String vehicleRegNumber;
     private String vehicleName;

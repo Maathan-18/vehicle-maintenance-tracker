@@ -56,6 +56,7 @@ public class ServiceRecordService {
                 .serviceCenterName(dto.getServiceCenterName())
                 .nextServiceDate(dto.getNextServiceDate())
                 .nextServiceOdometer(dto.getNextServiceOdometer())
+                .paymentMethod(dto.getPaymentMethod())
                 .build();
 
         ServiceRecord savedRecord = serviceRecordRepository.save(record);
@@ -135,6 +136,7 @@ public class ServiceRecordService {
         record.setServiceCenterName(dto.getServiceCenterName());
         record.setNextServiceDate(dto.getNextServiceDate());
         record.setNextServiceOdometer(dto.getNextServiceOdometer());
+        record.setPaymentMethod(dto.getPaymentMethod());
 
         return serviceRecordRepository.save(record);
     }
@@ -190,8 +192,8 @@ public class ServiceRecordService {
         return serviceRecordRepository.findByUserIdAndDateBetween(userId, startDate, LocalDate.now())
                 .stream()
                 .collect(Collectors.groupingBy(
-                        record -> record.getServiceDate().getYear() + "-" 
-                                  + String.format("%02d", record.getServiceDate().getMonthValue()),
+                        record -> record.getServiceDate().getYear() + "-"
+                                + String.format("%02d", record.getServiceDate().getMonthValue()),
                         java.util.TreeMap::new,
                         Collectors.reducing(
                                 BigDecimal.ZERO,
